@@ -20,4 +20,4 @@ A web-based guidely account checker.
 
 * Built using HTML, CSS, and JavaScript.
 * Uses the Bootstrap 4 framework for styling.
-* Makes a POST request to the EduRev API to validate the account.
+* Makes a POST request to the Guidely API to validate the account.
